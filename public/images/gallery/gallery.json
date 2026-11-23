@@ -1,0 +1,74 @@
+[
+  {
+    "id": "makgeolli",
+    "type": "image",
+    "file": "makgeolli.webp",
+    "width": 557,
+    "height": 722,
+    "alt": {
+      "mn": "Макголли ундааны зураг",
+      "ko": "막걸리 사진",
+      "en": "Makgeolli drink"
+    }
+  },
+  {
+    "id": "facebook-bbq",
+    "type": "image",
+    "file": "facebook-bbq.webp",
+    "width": 557,
+    "height": 722,
+    "alt": {
+      "mn": "Шарсан мах",
+      "ko": "구운 고기",
+      "en": "Grilled meat"
+    }
+  },
+  {
+    "id": "bbq-wrap",
+    "type": "image",
+    "file": "bbq-wrap.webp",
+    "width": 557,
+    "height": 722,
+    "alt": {
+      "mn": "Навчинд ороосон шарсан мах",
+      "ko": "잎에 싼 구운 고기",
+      "en": "Grilled meat wrapped in a leaf"
+    }
+  },
+  {
+    "id": "facebook-hours",
+    "type": "image",
+    "file": "facebook-hours.webp",
+    "width": 557,
+    "height": 722,
+    "alt": {
+      "mn": "Өдөр бүр 12:00–23:00 ажиллана",
+      "ko": "매일 12:00–23:00 영업",
+      "en": "Open daily 12:00–23:00"
+    }
+  },
+  {
+    "id": "stew",
+    "type": "image",
+    "file": "stew.webp",
+    "width": 557,
+    "height": 723,
+    "alt": {
+      "mn": "Аяганд хийж буй халуун шөл",
+      "ko": "그릇에 담는 뜨거운 찌개",
+      "en": "Hot stew being served into a bowl"
+    }
+  },
+  {
+    "id": "facebook-platter",
+    "type": "image",
+    "file": "facebook-platter.webp",
+    "width": 557,
+    "height": 723,
+    "alt": {
+      "mn": "Hanam BBQ шарсан махны таваг",
+      "ko": "Hanam BBQ 고기 접시",
+      "en": "Hanam BBQ meat platter"
+    }
+  }
+]

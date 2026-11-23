@@ -1,0 +1,119 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+enum Role {
+  SUPER_ADMIN
+  MENU_MANAGER
+  VIEWER
+}
+enum MenuGroup {
+  FOOD
+  DRINKS
+}
+model MenuCategory {
+  id String @id @default(cuid())
+  slug String @unique
+  group MenuGroup @default(FOOD)
+  nameMn String
+  nameKo String?
+  nameEn String?
+  descriptionMn String?
+  descriptionKo String?
+  descriptionEn String?
+  displayOrder Int @default(0)
+  isActive Boolean @default(false)
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  items MenuItem[]
+  @@index([group, isActive, displayOrder])
+}
+model MenuItem {
+  id String @id @default(cuid())
+  categoryId String
+  category MenuCategory @relation(fields: [categoryId], references: [id])
+  slug String @unique
+  nameMn String
+  nameKo String?
+  nameEn String?
+  descriptionMn String?
+  descriptionKo String?
+  descriptionEn String?
+  price Int?
+  currency String @default("MNT")
+  size String?
+  imageUrl String?
+  isActive Boolean @default(false)
+  isFeatured Boolean @default(false)
+  displayOrder Int @default(0)
+  deletedAt DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  images MenuItemImage[]
+  variants MenuItemVariant[]
+  @@index([categoryId, isActive, deletedAt, displayOrder])
+  @@index([updatedAt])
+}
+model MenuItemImage {
+  id String @id @default(cuid())
+  itemId String
+  item MenuItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  url String
+  altMn String
+  altKo String?
+  altEn String?
+  displayOrder Int @default(0)
+  @@index([itemId, displayOrder])
+}
+model MenuItemVariant {
+  id String @id @default(cuid())
+  itemId String
+  item MenuItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  nameMn String
+  nameKo String?
+  nameEn String?
+  price Int?
+  isActive Boolean @default(false)
+  displayOrder Int @default(0)
+  @@index([itemId, isActive, displayOrder])
+}
+model AdminUser {
+  id String @id @default(cuid())
+  name String
+  email String @unique
+  passwordHash String
+  role Role @default(VIEWER)
+  isActive Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sessions Session[]
+  auditLogs AuditLog[]
+}
+model Session {
+  id String @id
+  userId String
+  user AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  @@index([userId])
+  @@index([expiresAt])
+}
+model LoginAttempt {
+  key String @id
+  count Int @default(0)
+  resetAt DateTime
+}
+model AuditLog {
+  id String @id @default(cuid())
+  actorId String?
+  actor AdminUser? @relation(fields: [actorId], references: [id])
+  action String
+  entity String
+  entityId String
+  details Json?
+  createdAt DateTime @default(now())
+  @@index([entity, entityId, createdAt])
+}
