@@ -64,6 +64,15 @@ export function canManageStaff(role: string) {
 }
 export function validImageUrl(url: string | null) {
   if (!url) return true;
+  // Bundled, user-approved menu photos can also be retained during admin edits.
+  if (
+    [
+      "/images/menu/galmaegisal.webp",
+      "/images/menu/gabrisal.webp",
+      "/images/menu/hangjeongsal.webp",
+    ].includes(url)
+  )
+    return true;
   if (/^\/uploads\/[a-f0-9-]+\.webp$/.test(url))
     return process.env.NODE_ENV !== "production";
   const base = process.env.S3_PUBLIC_URL?.replace(/\/$/, "");

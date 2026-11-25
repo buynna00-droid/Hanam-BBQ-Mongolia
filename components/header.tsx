@@ -4,7 +4,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { copy, languages, type Lang } from "@/lib/content";
-export function Header({ lang, logo }: { lang: Lang; logo: boolean }) {
+export function Header({
+  lang,
+  logo,
+  page = "home",
+}: {
+  lang: Lang;
+  logo: boolean;
+  page?: "home" | "about" | "menu";
+}) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState("home");
   const [hidden, setHidden] = useState(false);
@@ -28,6 +36,7 @@ export function Header({ lang, logo }: { lang: Lang; logo: boolean }) {
   }, []);
   useEffect(() => {
     document.documentElement.lang = lang;
+    if (page !== "home") return;
     const observer = new IntersectionObserver(
       (entries) => {
         for (const e of entries) if (e.isIntersecting) setActive(e.target.id);
@@ -38,7 +47,7 @@ export function Header({ lang, logo }: { lang: Lang; logo: boolean }) {
       .querySelectorAll("section[id]")
       .forEach((el) => observer.observe(el));
     return () => observer.disconnect();
-  }, [lang]);
+  }, [lang, page]);
   return (
     <header className={`site-header${hidden && !open ? " is-hidden" : ""}`}>
       <Link href={`/${lang}`} className="brand" aria-label="Hanam BBQ Mongolia">
@@ -78,8 +87,22 @@ export function Header({ lang, logo }: { lang: Lang; logo: boolean }) {
           (id) => (
             <a
               key={id}
-              href={`#${id}`}
-              aria-current={active === id ? "location" : undefined}
+              href={
+                id === "about" || id === "menu"
+                  ? `/${lang}/${id}`
+                  : page !== "home"
+                    ? `/${lang}#${id}`
+                    : `#${id}`
+              }
+              aria-current={
+                page !== "home"
+                  ? id === page
+                    ? "page"
+                    : undefined
+                  : active === id
+                    ? "location"
+                    : undefined
+              }
               onClick={() => setOpen(false)}
             >
               {t[id]}
@@ -90,7 +113,7 @@ export function Header({ lang, logo }: { lang: Lang; logo: boolean }) {
           {languages.map((l) => (
             <Link
               key={l}
-              href={`/${l}`}
+              href={`/${l}${page !== "home" ? `/${page}` : ""}`}
               lang={l}
               onClick={() => setOpen(false)}
               aria-current={l === lang ? "page" : undefined}

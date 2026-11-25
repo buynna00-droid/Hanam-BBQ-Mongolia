@@ -1,6 +1,8 @@
 "use client";
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import type {
   MenuCategory,
   MenuItem,
@@ -17,25 +19,27 @@ type Category = MenuCategory & {
 export function PublicMenu({
   categories,
   lang,
+  fullPage = false,
+  initialGroup = "FOOD",
 }: {
   categories: Category[];
   lang: Lang;
+  fullPage?: boolean;
+  initialGroup?: "FOOD" | "DRINKS";
 }) {
-  const [group, setGroup] = useState("FOOD");
-  const [filter, setFilter] = useState("all");
-  const [expanded, setExpanded] = useState(false);
+  const [group, setGroup] = useState(initialGroup);
+  const [filter, setFilter] = useState("");
   const t = copy[lang];
   const visible = categories.filter((c) => c.group === group);
   const allItems = visible.flatMap((category) => category.items);
-  const previewIds = new Set(allItems.slice(0, 10).map((item) => item.id));
+  const selectedCategory = visible.some((category) => category.id === filter)
+    ? filter
+    : visible[0]?.id;
   const shownCategories = visible
-    .filter((category) => filter === "all" || category.id === filter)
+    .filter((category) => category.id === selectedCategory)
     .map((category) => ({
       ...category,
-      items:
-        filter === "all" && !expanded
-          ? category.items.filter((item) => previewIds.has(item.id))
-          : category.items,
+      items: fullPage ? category.items : category.items.slice(0, 10),
     }))
     .filter((category) => category.items.length > 0);
   const price = (p: number | null) =>
@@ -44,17 +48,18 @@ export function PublicMenu({
       : new Intl.NumberFormat(
           lang === "mn" ? "mn-MN" : lang === "ko" ? "ko-KR" : "en-US",
         ).format(p) + " ₮";
+  const CategoryHeading = fullPage ? "h2" : "h3";
+  const ItemHeading = fullPage ? "h3" : "h4";
   return (
     <>
       <div className="menu-tabs" role="group" aria-label={t.menu}>
-        {["FOOD", "DRINKS"].map((g) => (
+        {(["FOOD", "DRINKS"] as const).map((g) => (
           <button
             key={g}
             aria-pressed={group === g}
             onClick={() => {
               setGroup(g);
-              setFilter("all");
-              setExpanded(false);
+              setFilter("");
             }}
           >
             {g === "FOOD" ? t.food : t.drinks}
@@ -62,22 +67,12 @@ export function PublicMenu({
         ))}
       </div>
       <div className="category-filters">
-        <button
-          aria-pressed={filter === "all"}
-          onClick={() => {
-            setFilter("all");
-            setExpanded(false);
-          }}
-        >
-          {t.all}
-        </button>
         {visible.map((c) => (
           <button
             key={c.id}
-            aria-pressed={filter === c.id}
+            aria-pressed={selectedCategory === c.id}
             onClick={() => {
               setFilter(c.id);
-              setExpanded(false);
             }}
           >
             {localized(c, "name", lang) ?? t.translation}
@@ -93,44 +88,74 @@ export function PublicMenu({
         ) : (
           shownCategories.map((c) => (
             <div key={c.id} className="menu-category">
-              <h3>{localized(c, "name", lang) ?? t.translation}</h3>
+              <CategoryHeading>
+                {localized(c, "name", lang) ?? t.translation}
+              </CategoryHeading>
               {localized(c, "description", lang) && (
                 <p>{localized(c, "description", lang)}</p>
               )}
               <div className="menu-grid">
                 {c.items.map((item) => (
-                  <article className="menu-item" key={item.id}>
-                    {item.imageUrl && (
-                      <Image
-                        src={item.imageUrl}
-                        alt={localized(item, "name", lang) ?? item.nameMn}
-                        width={600}
-                        height={400}
-                      />
-                    )}
-                    <div className="item-title">
-                      <h4>{localized(item, "name", lang) ?? t.translation}</h4>
-                      <span>{price(item.price)}</span>
-                    </div>
-                    {lang !== "mn" && !localized(item, "name", lang) && (
-                      <p lang="mn">{item.nameMn}</p>
-                    )}
-                    {item.isFeatured && (
-                      <small className="gold">{t.featured}</small>
-                    )}
-                    {item.size && <small>{item.size}</small>}
-                    {localized(item, "description", lang) && (
-                      <p>{localized(item, "description", lang)}</p>
-                    )}
-                    {item.variants.map((v) => (
-                      <div className="variant" key={v.id}>
-                        <span>
-                          {localized(v, "name", lang) ?? t.translation}
-                        </span>
-                        <span>{price(v.price)}</span>
+                  <article
+                    className={
+                      fullPage
+                        ? `menu-item menu-poster${item.imageUrl ? " has-photo" : ""}`
+                        : "menu-item"
+                    }
+                    key={item.id}
+                  >
+                    {item.imageUrl && fullPage && (
+                      <div className="menu-poster-photo">
+                        <Image
+                          src={item.imageUrl}
+                          alt={localized(item, "name", lang) ?? item.nameMn}
+                          sizes="(max-width: 600px) 45vw, (max-width: 1000px) 50vw, 25vw"
+                          width={600}
+                          height={400}
+                        />
                       </div>
-                    ))}
-                    {item.images.length > 0 && (
+                    )}
+                    <div
+                      className={
+                        fullPage ? "menu-poster-copy" : "menu-preview-copy"
+                      }
+                    >
+                      <div className="item-title">
+                        <ItemHeading>
+                          {localized(item, "name", lang) ?? t.translation}
+                        </ItemHeading>
+                        {!fullPage && <span>{price(item.price)}</span>}
+                      </div>
+                      {lang !== "mn" && !localized(item, "name", lang) && (
+                        <p lang="mn">{item.nameMn}</p>
+                      )}
+                      {fullPage && lang !== "ko" && item.nameKo && (
+                        <p className="menu-korean-name" lang="ko">
+                          {item.nameKo}
+                        </p>
+                      )}
+                      {item.isFeatured && (
+                        <small className="gold">{t.featured}</small>
+                      )}
+                      {item.size && <small>{item.size}</small>}
+                      {localized(item, "description", lang) && (
+                        <p>{localized(item, "description", lang)}</p>
+                      )}
+                      {item.variants.map((v) => (
+                        <div className="variant" key={v.id}>
+                          <span>
+                            {localized(v, "name", lang) ?? t.translation}
+                          </span>
+                          <span>{price(v.price)}</span>
+                        </div>
+                      ))}
+                      {fullPage && (
+                        <div className="menu-poster-price">
+                          {price(item.price)}
+                        </div>
+                      )}
+                    </div>
+                    {fullPage && item.images.length > 0 && (
                       <div className="image-strip">
                         {item.images.map((img) => (
                           <Image
@@ -150,20 +175,12 @@ export function PublicMenu({
           ))
         )}
       </div>
-      {filter === "all" && allItems.length > 10 && (
+      {!fullPage && allItems.length > 0 && (
         <div className="menu-expand">
-          <span aria-live="polite">
-            {expanded ? allItems.length : 10} / {allItems.length}
-          </span>
-          <button
-            type="button"
-            aria-expanded={expanded}
-            aria-controls="menu-results"
-            onClick={() => setExpanded(!expanded)}
-          >
-            {expanded ? t.showLess : t.viewAll}
-            <span aria-hidden="true">{expanded ? "−" : "+"}</span>
-          </button>
+          <Link href={`/${lang}/menu?group=${group}`}>
+            {t.viewAll}
+            <ArrowRight size={18} aria-hidden="true" />
+          </Link>
         </div>
       )}
     </>

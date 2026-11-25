@@ -9,7 +9,7 @@ export function EditorialMotion() {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const blocks = Array.from(
       root.querySelectorAll<HTMLElement>(
-        ".editorial > .photo > .photo-img, .editorial > .photo > .photo-placeholder, .editorial-inset, .editorial > .editorial-copy",
+        ".editorial > .photo > .photo-img, .editorial > .photo > .photo-placeholder, .editorial > .editorial-copy",
       ),
     ).map((element) => ({
       element,

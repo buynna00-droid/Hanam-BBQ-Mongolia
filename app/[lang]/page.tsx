@@ -1,24 +1,23 @@
 import Image from "next/image";
+import Link from "next/link";
+import { SiteFooter } from "@/components/site-footer";
+import { aboutPageCopy } from "@/lib/about-content";
 import { notFound } from "next/navigation";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import {
   ArrowDown,
-  Facebook,
-  Instagram,
-  Mail,
+  ArrowRight,
   MapPin,
   UtensilsCrossed,
   Flame,
 } from "lucide-react";
 import type { Metadata } from "next";
-import { db } from "@/lib/db";
-import { ensureLocalPostgres } from "@/scripts/local-postgres.mjs";
+import { getMenu } from "@/lib/public-menu";
 import { branchMaps } from "@/lib/locations";
 import { BranchMap } from "@/components/branch-map";
 import {
   copy,
-  footerCopy,
   languages,
   editorialCopy,
   branches,
@@ -142,24 +141,6 @@ export default async function Page({
             ))}
           </div>
         </section>
-        <div className="editorial-bridge">
-          {asset("/images/editorial/grilled-meat.webp") && (
-            <div className="editorial-inset">
-              <Image
-                src="/images/editorial/grilled-meat.webp"
-                alt={
-                  lang === "mn"
-                    ? "Шарсан мах"
-                    : lang === "ko"
-                      ? "구운 고기"
-                      : "Grilled meat"
-                }
-                fill
-                sizes="(max-width: 340px) calc(88vw - 2cm), (max-width: 833px) calc(300px - 2cm), (max-width: 1250px) calc(36vw - 2cm), calc(450px - 2cm)"
-              />
-            </div>
-          )}
-        </div>
         <section className="editorial special section-wrap">
           <Photo
             src="/images/special/charcoal-grilling.jpg"
@@ -176,6 +157,12 @@ export default async function Page({
             <p>{editorialCopy[lang].special}</p>
           </div>
         </section>
+        <div className="editorial-bridge">
+          <Link className="about-detail-link" href={`/${lang}/about`}>
+            {aboutPageCopy[lang].more}
+            <ArrowRight size={18} aria-hidden="true" />
+          </Link>
+        </div>
         <section id="menu" className="section-wrap menu-section">
           <div className="section-heading">
             <h2>{t.menu}</h2>
@@ -223,98 +210,7 @@ export default async function Page({
           <BranchMap lang={lang} />
         </section>
       </main>
-      <footer className="site-footer">
-        <div className="footer-grid">
-          <div className="footer-brand">
-            <a href="#home" aria-label={`Hanam BBQ Mongolia · ${t.home}`}>
-              {logo ? (
-                <Image
-                  src="/images/logo/hanam-bbq-logo.png"
-                  alt="Hanam BBQ Mongolia"
-                  width={648}
-                  height={212}
-                  className="footer-logo"
-                  sizes="220px"
-                />
-              ) : (
-                "Hanam BBQ Mongolia"
-              )}
-            </a>
-            <h3>{footerCopy[lang].phone}</h3>
-            <address className="footer-contact">
-              <a href="tel:+97670117712">7011-7712</a>
-            </address>
-          </div>
-          <div className="footer-hours">
-            <h3>{footerCopy[lang].hours}</h3>
-            <dl>
-              <div>
-                <dt>{footerCopy[lang].days}</dt>
-                <dd>12:00–23:00</dd>
-              </div>
-            </dl>
-          </div>
-          <div className="footer-links">
-            <h3>{footerCopy[lang].links}</h3>
-            <nav aria-label={footerCopy[lang].links}>
-              <a href="#home">{t.home}</a>
-              <a href="#about">{t.about}</a>
-              <a href="#menu">{t.menu}</a>
-              <a href="#gallery">{t.gallery}</a>
-              <a href="#branches">{t.branches}</a>
-            </nav>
-            <div className="socials">
-              <a
-                href="https://www.facebook.com/hanambbq.mn"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-              >
-                <Facebook size={19} />
-              </a>
-              <a
-                href="https://www.instagram.com/hanambbq.mn/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-              >
-                <Instagram size={19} />
-              </a>
-              <a
-                href="mailto:info@hanambbq.mn"
-                aria-label={`${footerCopy[lang].email}: info@hanambbq.mn`}
-                title="info@hanambbq.mn"
-              >
-                <Mail size={19} aria-hidden="true" />
-              </a>
-            </div>
-          </div>
-        </div>
-        <div className="footer-bottom">
-          <span>© {new Date().getFullYear()} Hanam BBQ Mongolia</span>
-          <a href="#home">↑ {t.home}</a>
-        </div>
-      </footer>
+      <SiteFooter lang={lang} logo={logo} />
     </div>
   );
-}
-async function getMenu() {
-  await ensureLocalPostgres();
-  return db.menuCategory.findMany({
-    where: { isActive: true, deletedAt: null },
-    orderBy: { displayOrder: "asc" },
-    include: {
-      items: {
-        where: { isActive: true, deletedAt: null },
-        orderBy: { displayOrder: "asc" },
-        include: {
-          variants: {
-            where: { isActive: true },
-            orderBy: { displayOrder: "asc" },
-          },
-          images: { orderBy: { displayOrder: "asc" } },
-        },
-      },
-    },
-  });
 }

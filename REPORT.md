@@ -100,3 +100,23 @@ Setup: `README.md`. Staff instructions: `docs/ADMIN_GUIDE.md`. Detailed content 
 - Passed: intentionally stopped the isolated cluster, requested MN/EN/KO concurrently, and all three requests recovered and returned menu records.
 - Passed: all 48 menu records still match the transcription (including the subsequently requested English names); missing Мёнгинамуль price remains null.
 - No seed rerun, menu content overwrite, deployment or remote database changes.
+
+## About detail page
+
+Added `/mn/about`, `/ko/about`, `/en/about` with localized history/experience sections, supplied branch addresses and verified map links. No founding dates, milestones or new brand claims invented: detailed chronology remains pending. Replaced the overlapping editorial inset with a Learn more link; header/footer About links open the dedicated route and language switching preserves it. Shared footer retained. Typecheck and targeted ESLint passed. Local browser checks cover navigation, language switching, sitemap and responsive widths. Not deployed; existing transfer ZIP does not include these changes.
+
+
+## Dedicated menu page ? 2026-11-24
+- Added /mn/menu, /ko/menu, /en/menu; header/footer navigation and language switch retain the menu route. Existing home preview remains.
+- Shared server-only PostgreSQL query; full page displays all active items per selected group, category filters, two-column dark editorial cards (one column on narrow phones). No new photos, menu records, prices or unverified descriptions were added. Existing admin item/category/image actions remain connected; layout revalidation covers the new route.
+- PASSED: TypeScript check and ESLint for changed TS/TSX files. Headless Edge: all three menu routes return 200; each has 24 foods and 24 drinks; category filtering, active header link, home-to-menu navigation and language switching. No horizontal overflow at 1440/768/390px; two columns at 1440/768, one at 390.
+- Initial geometry assertion ran before styles settled; rerun after network idle passed using actual card rectangles.
+- NOT RUN this change: production build, admin write/upload regression tests, deployment. Source Word document remains unavailable; no claim of Word validation.
+
+
+## Three menu photos ? 2026-11-24
+- Cropped the user-confirmed pU5A3UQU.jpg poster into galmaegisal.webp, gabrisal.webp and hangjeongsal.webp under public/images/menu. No generated food imagery. Linked to existing matching MN/KO records; verified prices 30,900 / 29,900 / 31,900 MNT. Names and prices already matched and were preserved.
+- Import script scripts/import-menu-photos.ts adds audit records and preserves existing image fields. Ran twice: 3 updates, then 0 updates. Both public routes read uncached database content.
+- Allowed these exact bundled image URLs in admin validation so later edits can retain them. Upload/replace/remove functionality remains existing admin functionality.
+- PASSED: typecheck, targeted ESLint, bundled URL validation and untrusted/path traversal URL rejection; headless Edge image decode and price checks on /mn/menu, /ko/menu, /en/menu and /mn.
+- NOT RUN: production build, admin upload regression, deployment. Only local database updated; production requires the bundled files and running the import against its database.
