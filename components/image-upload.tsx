@@ -19,7 +19,7 @@ export function ImageUpload({
       <label>
         <span>
           {name === "imageUrl" ? "Main image" : "Extra image"} · JPEG / PNG /
-          WEBP · max 8 MB
+          WEBP · max 4 MB
         </span>
         <input
           type="file"
@@ -28,6 +28,11 @@ export function ImageUpload({
           onChange={async (e) => {
             const file = e.target.files?.[0];
             if (!file) return;
+            if (file.size > 4 * 1024 * 1024) {
+              setStatus("Use an image up to 4 MB.");
+              e.target.value = "";
+              return;
+            }
             setBusy(true);
             setStatus("Uploading…");
             try {

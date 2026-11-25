@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { blobPublicOrigin } from "./storage-config";
 const optionalText = z
   .string()
   .trim()
@@ -64,6 +65,10 @@ export function canManageStaff(role: string) {
 }
 export function validImageUrl(url: string | null) {
   if (!url) return true;
+  const blobOrigin = blobPublicOrigin();
+  if (blobOrigin && url.startsWith(`${blobOrigin}/menu/`)) {
+    return /^[a-f0-9-]+\.webp$/.test(url.slice(`${blobOrigin}/menu/`.length));
+  }
   // Bundled, user-approved menu photos can also be retained during admin edits.
   if (
     [

@@ -59,7 +59,7 @@ The supplied 1555 × 1012 food photograph is installed as the hero, the 2000 × 
 | `S3_PUBLIC_URL` | Public HTTPS bucket/CDN prefix; restart after changing |
 | `ALLOW_UNVERIFIED_SEED` | Explicit opt-in for hidden, unverified prompt drafts |
 
-Development uploads use ignored `public/uploads/`. Production uploads require the S3 variables and fail closed without them. Configure a private write credential and public read access through your CDN. Uploaded files are decoded, resized, stripped of metadata and re-encoded as uniquely named WEBP files. Set a 9 MB request limit at your reverse proxy as well. Removing an image detaches its database reference; objects remain for deliberate storage cleanup and recovery.
+Development uploads use ignored `public/uploads/`. Production uploads require Vercel Blob or the S3 variables and fail closed without either. Configure a private write credential and public read access through your CDN. Uploaded files are decoded, resized, stripped of metadata and re-encoded as uniquely named WEBP files. Requests are limited to 4 MB image files to stay within the Vercel server upload limit. Removing an image detaches its database reference; objects remain for deliberate storage cleanup and recovery.
 
 ## Validation and build
 
@@ -90,3 +90,7 @@ This workspace opts in to `LOCAL_POSTGRES_AUTOSTART=true` in its ignored `.env`.
 Recovery is restricted to Windows, the existing `.local/postgres` cluster, PostgreSQL 18 binaries and DATABASE_URL host `127.0.0.1:55439`. It never initializes, reseeds or republishes data, and does not start remote databases. When recovery cannot succeed, the page reports temporary menu unavailability rather than claiming the menu awaits verification.
 
 This is local development recovery, not 24/7 hosting. A powered-off computer cannot serve the website. Production requires an always-running host and PostgreSQL service/managed database; nothing has been deployed.
+
+
+### Vercel Blob uploads
+Connect a **Public** Vercel Blob store to this project for Production. The integration sets the server-only `BLOB_READ_WRITE_TOKEN`; redeploy after connecting so Next Image permits the exact store hostname. Blob takes priority over S3 when both are configured. No token is sent to the browser. Uploads go under `menu/<uuid>.webp`. Files are validated and optimized before storage; JPEG/PNG/WEBP up to 4 MB only. Save the item after upload to publish the image. Replace/remove detaches the previous database reference; old objects stay available for recovery and can be cleaned up later. Local development still uses public/uploads when no remote storage is configured.

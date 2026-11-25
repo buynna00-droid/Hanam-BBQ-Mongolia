@@ -1,9 +1,20 @@
 import type { NextConfig } from "next";
+import { blobPublicOrigin } from "./lib/storage-config";
+const blobOrigin = blobPublicOrigin();
 const config: NextConfig = {
   poweredByHeader: false,
   turbopack: { root: process.cwd() },
   images: {
     remotePatterns: [
+      ...(blobOrigin
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: new URL(blobOrigin).hostname,
+              pathname: "/menu/**",
+            },
+          ]
+        : []),
       ...(process.env.S3_PUBLIC_URL
         ? [
             {

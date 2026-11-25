@@ -4,6 +4,8 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { put } from "@vercel/blob";
+import { blobPublicOrigin } from "@/lib/storage-config";
 import { currentUser, verifyCsrf } from "@/lib/auth";
 import { canWrite } from "@/lib/validation";
 import { db } from "@/lib/db";
@@ -14,7 +16,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!canWrite(user.role))
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  if (Number(req.headers.get("content-length") ?? 0) > 9 * 1024 * 1024)
+  if (Number(req.headers.get("content-length") ?? 0) > 4.25 * 1024 * 1024)
     return NextResponse.json({ error: "File too large" }, { status: 413 });
   try {
     const form = await req.formData();
@@ -22,12 +24,12 @@ export async function POST(req: Request) {
     const file = form.get("file");
     if (
       !(file instanceof File) ||
-      file.size > 8 * 1024 * 1024 ||
+      file.size > 4 * 1024 * 1024 ||
       !["image/jpeg", "image/png", "image/webp"].includes(file.type) ||
       !/\.(jpe?g|png|webp)$/i.test(file.name)
     )
       return NextResponse.json(
-        { error: "Use a JPEG, PNG, or WEBP up to 8 MB." },
+        { error: "Use a JPEG, PNG, or WEBP up to 4 MB." },
         { status: 400 },
       );
     const bytes = Buffer.from(await file.arrayBuffer());
@@ -53,7 +55,17 @@ export async function POST(req: Request) {
       .toBuffer();
     const key = `${randomUUID()}.webp`;
     let url: string;
-    if (process.env.S3_BUCKET) {
+    if (process.env.BLOB_READ_WRITE_TOKEN) {
+      if (!blobPublicOrigin()) throw new Error("Invalid Blob configuration");
+      const blob = await put(`menu/${key}`, optimized, {
+        access: "public",
+        contentType: "image/webp",
+        addRandomSuffix: false,
+        allowOverwrite: false,
+        cacheControlMaxAge: 31536000,
+      });
+      url = blob.url;
+    } else if (process.env.S3_BUCKET) {
       const client = new S3Client({
         region: process.env.S3_REGION ?? "auto",
         endpoint: process.env.S3_ENDPOINT,
